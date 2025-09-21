@@ -1,38 +1,737 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
+
+/* Estilos globais básicos */
+body {
+  margin: 0;
+  font-family: 'Manrope', sans-serif; /* Define Manrope como fonte padrão */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* =========================================== */
+/* VARIÁVEIS CSS PARA PERSONALIZAÇÃO */
+/* =========================================== */
+:root {
+  /* --- CORES E OPACIDADES DA CAIXA DAS PERGUNTAS (STEP 'QUESTIONS') --- */
+  --questions-box-bg-rgb: 255, 255, 255; /* Cor de fundo da caixa das perguntas (valores RGB) */
+  --questions-box-bg-opacity: 0.9;      /* Opacidade da caixa das perguntas (de 0.0 a 1.0) */
+
+  /* --- CORES E OPACIDADES DOS ITENS INDIVIDUAIS DE PERGUNTAS --- */
+  --question-item-bg-rgb: 249, 249, 249; /* Cor de fundo de cada item de pergunta (valores RGB) */
+  --question-item-bg-opacity: 1;        /* Opacidade de cada item de pergunta (de 0.0 a 1.0) */
+
+  /* --- CORES DOS BOTÕES --- */
+  --btn-primary-rgb: 0, 123, 255; /* Cor de fundo do botão primário (Decolar do formulário) */
+  --btn-primary-opacity: 1;
+  --btn-primary-hover-rgb: 0, 86, 179;
+  --btn-primary-hover-opacity: 1;
+
+  --btn-secondary-rgb: 108, 117, 125; /* Cor de fundo do botão secundário (navegação carrossel) */
+  --btn-secondary-opacity: 1;
+  --btn-secondary-hover-rgb: 90, 98, 104;
+  --btn-secondary-hover-opacity: 1;
+
+  --btn-success-rgb: 0, 117, 125; /* Cor de fundo do botão de sucesso (Selecionar, Enviar) */
+  --btn-success-opacity: 1;
+  --btn-success-hover-rgb: 108, 117, 125;
+  --btn-success-hover-opacity: 1;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+
+/* Estilos do container principal */
+.container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  height: 100vh; /* Ocupa 100% da altura da viewport */
+}
+
+/* Área azul (visível apenas em landscape) */
+.container.landscape .blue {
+  flex: 1; /* Ocupa 1/4 do espaço */
+  background: rgb(0, 0, 0);
+}
+
+/* Modificações para a área amarela (yellow) */
+.container.landscape .yellow,
+.container.portrait .yellow {
+  background: rgb(2, 13, 39); /* Cor de fundo padrão quando nenhuma imagem é aplicada */
+  overflow-y: auto; /* Adiciona rolagem vertical se o conteúdo for muito grande */
+  overflow-x: hidden; /* Mantido: Esconde o overflow horizontal para qualquer elemento que se movam para fora */
+  padding: 20px; /* Espaçamento interno */
+  box-sizing: border-box;
+
+  position: relative; /* ESSENCIAL: Serve como contexto para os elementos absolutos do formulário e do carrossel */
+}
+
+.container.landscape .yellow {
+  flex: 2; /* Ocupa 2/4 do espaço em landscape */
+}
+.container.portrait .yellow {
+  flex: 1; /* Ocupa todo o espaço em portrait */
+  width: 100%;
+}
+
+/* Estilos para o bloco de perguntas (original - provavelmente será substituído por .questions-area) */
+.questions {
+  /* Estes estilos se aplicam apenas ao <h3> para a mensagem 'done' */
+  text-align: center;
+  color: #333;
+  font-size: 2.5vh;
+}
+.questions h3 {
+  margin-bottom: 2.5vh;
+  color: #333;
+  font-size: 2.5vh;
+}
+
+/* Estilos para botões genéricos */
+button {
+  margin-top: 1.5vh;
+  padding: 0.8vh 1.2vh;
+  background-color: rgba(var(--btn-primary-rgb), var(--btn-primary-opacity)); /* Padrão para botão primário */
+  color: white;
+  border: none;
+  border-radius: 0.4vh;
+  cursor: pointer;
+  font-size: 1.8vh;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: rgba(var(--btn-primary-hover-rgb), var(--btn-primary-hover-opacity));
+}
+
+/* Estilos para botões desabilitados (por exemplo, durante o loading) */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Estilos da Mensagem de Sucesso (antigo, substituído pela nova estrutura da tela 'done') */
+.done-message {
+  display: none; /* Esconde a classe antiga, para garantir que não apareça */
+}
+
+
+/* Área verde (visível apenas em landscape) */
+.container.landscape .green {
+  flex: 1;
+  background: rgb(0, 0, 0);
+}
+
+/* =========================================== */
+/* ESTILOS PARA O FORMULÁRIO DE REGISTRO INDIVIDUALIZADO (step="form") */
+/* =========================================== */
+
+/* Estilos comuns para todos os elementos de texto, campos e imagens do FORMULÁRIO */
+.form-element,
+.form-field-group,
+.form-button,
+.form-image {
+  position: absolute;
+  font-family: 'Manrope', sans-serif;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* Estilos para os textos puros (Racing Pass, Destino, Largada, Valido) */
+.form-element {
+  white-space: nowrap;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* 1. Racing Pass */
+.phrase-racing-pass {
+  top: 17vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 5vh;
+}
+
+
+/* Estilos para os grupos de campo (Label + Input) */
+.form-field-group {
+  display: flex;
+  align-items: baseline;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45vh;
+  max-width: 80%;
+}
+.field-label {
+  font-size: 2.2vh;
+  margin-right: 1vh;
+  white-space: nowrap;
+  font-weight: 400;
+}
+.field-input {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 0.2vh solid white;
+  color: white;
+  font-family: 'Manrope', sans-serif;
+  font-size: 2vh;
+  padding: 0.5vh 0.5vh;
+  outline: none;
+  min-width: 0;
+}
+.field-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Posições individuais para cada grupo de campo */
+.field-nome { top: 27vh; }
+.field-sobrenome { top: 32vh; }
+.field-email { top: 37vh;}
+.field-telefone { top: 42vh; }
+.field-senha { top: 47vh; }
+.field-senha2 { top: 52vh; }
+
+/* 8. Destino: TrustLand */
+.phrase-destino {
+  top: 57vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.0vh;
+}
+
+/* 9. Largada: Imediata */
+.phrase-largada {
+  top: 62vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.0vh;
+}
+
+/* Estilos para as imagens G2B e QR */
+.form-image {
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Imagem G2B.png */
+.image-g2b {
+  bottom: 83vh;
+  left: 50%;
+  transform: translateX(-50%);
+   width: 8vh;
+}
+
+/* Imagem QR.png */
+.image-qr {
+ top: 75vh;
+  left: 50%;
+  transform: translateX(-50%);
+   width: 15vh;
   }
-  to {
-    transform: rotate(360deg);
-  }
+
+/* 10. Botão "Decolar" do Formulário */
+.form-button {
+  bottom: 27vh;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1.5vh 3vh;
+  font-size: 2.5vh;
+  text-shadow:
+    1px 1px 0 #0bc2e2d3,
+    3px 3px 6px rgba(0, 0, 0, 0.7);
+  background-color: #ffffff6b;
+  border-radius: 4vh;
+  border: 0.1vh solid white;
+box-shadow:
+    3px 2px 0 #0bc2e2d3,
+    2px 2px 2px rgba(0, 0, 0, 0.7);
+}
+.form-button:hover {
+  background-color: rgba(var(--btn-primary-hover-rgb), var(--btn-primary-hover-opacity));
+}
+
+/* 11. Valido para uma corrida */
+.phrase-valido {
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.5vh;
+}
+
+
+/* =========================================== */
+/* ESTILOS PARA A ÁREA DE SELEÇÃO DE PERSONAGEM INDIVIDUALIZADA (step="character") */
+/* =========================================== */
+
+/* Estilos comuns para todos os elementos do CARROSSEL (exceto o texto animado) */
+.character-display-image,
+.character-nav-container,
+.character-select-button,
+.character-image {
+  position: absolute;
+  font-family: 'Manrope', sans-serif;
+  color: white;
+}
+
+/* O contêiner fixo para o título (o "palco" do letreiro) */
+.character-title {
+  position: absolute; /* Já tinha no seu código, o que já faz dele um contexto de posicionamento */
+  top: 31vh; /* Posição vertical do letreiro */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20vh; /* Ajuste esta largura para o tamanho desejado da área do letreiro */
+  height: 3vh; /* Aumentado um pouco para garantir que o texto caiba com folga */
+  overflow: hidden; /* CRUCIAL: Esconde o texto que sair desta caixa */
+}
+
+/* O texto que realmente se move dentro do contêiner */
+.character-title-inner-text {
+  position: absolute; /* Position relative to .character-title */
+  top: 0; /* Alinha ao topo do seu pai (.character-title) */
+  left: 0; /* Posição inicial da esquerda, será substituída pela animação */
+  white-space: nowrap; /* Impede que o texto quebre linha */
+  display: inline-block; /* Essencial para que o 'left' funcione corretamente */
+
+  /* Estilos de texto movidos para cá para controle preciso */
+  font-family: 'Manrope', sans-serif;
+  font-size: 2vh;
+  color: rgb(91, 148, 253,0.5);
+  text-shadow:
+    0px 0px 0 #d5f9ffd3,
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+
+  animation: marqueeText 15s linear infinite; /* Aplica a animação de rolagem, reduzido para 5s para testar mais rápido */
+}
+
+/* Imagem do personagem */
+.character-display-image {
+  top: 43vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30vh;
+  height: auto;
+  object-fit: contain;
+  border-radius: 1vh;
+  box-shadow: 0 0.5vh 1vh rgba(0,0,0,0);
+}
+
+/* Container dos botões de navegação (◀ e ▶) */
+.character-nav-container {
+  top: 50vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30vh;
+}
+
+/* Botões de navegação (◀ e ▶) */
+.character-nav-button {
+  padding: 1.5vh 2.5vh;
+  font-size: 3vh;
+ text-shadow:
+    1px 1px 0 #0bc2e2d3,
+    3px 3px 6px rgba(0, 0, 0, 0.7);
+  background-color: #ffffff6b;
+  border-radius: 4vh;
+  border: 0.1vh solid white;
+box-shadow:
+    3px 2px 0 #0bc2e2d3,
+    2px 2px 2px rgba(0, 0, 0, 0.7);
+}
+.character-nav-button:hover {
+  background-color: rgba(var(--btn-secondary-hover-rgb), var(--btn-secondary-hover-opacity));
+}
+
+/* Botão "Selecionar" */
+.character-select-button {
+  top: 75vh;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1.5vh 3vh;
+  font-size: 2.5vh;
+ text-shadow:
+    1px 1px 0 #0bc2e2d3,
+    3px 3px 6px rgba(0, 0, 0, 0.7);
+  background-color: #ffffff6b;
+  border-radius: 4vh;
+  border: 0.1vh solid white;
+box-shadow:
+    3px 2px 0 #0bc2e2d3,
+    2px 2px 2px rgba(0, 0, 0, 0.7);
+}
+.character-select-button:hover {
+  background-color: rgba(var(--btn-success-hover-rgb), var(--btn-success-hover-opacity));
+}
+
+/* Estilos específicos para a nova imagem G2BLogo na tela de personagem */
+.image-g2b-logo {
+  width: 34vh;
+  top: 26.6vh;
+  left: 50%;
+  transform: translateX(-50%);
+  object-fit: contain;
+}
+
+/* =========================================== */
+/* NOVOS ESTILOS PARA A ÁREA DE QUESTÕES (step="questions") */
+/* =========================================== */
+
+/* Estilos comuns para os elementos da tela de perguntas */
+.questions-screen-title,
+.questions-character-circle,
+.questions-area {
+  position: absolute;
+  font-family: 'Manrope', sans-serif;
+  color: white; /* Cor padrão para texto na área de perguntas */
+}
+
+/* Título "Teste para piloto" */
+.questions-screen-title {
+  top: 4vh; /* Ajuste a posição vertical */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 4.5vh;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+  white-space: nowrap; /* Impede que o texto quebre linha */
+  z-index: 10; /* Garante que fique acima de outros elementos se houver sobreposição */
+}
+
+/* Círculo com a imagem do personagem */
+.questions-character-circle {
+  top: 18vh; /* Posição vertical do círculo */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16vh; /* Tamanho do círculo */
+  height: 16vh;
+  border-radius: 50%; /* Faz o div ser um círculo */
+  overflow: hidden; /* Corta a imagem para caber no círculo */
+  border: 0.5vh solid #00c2e2; /* Borda estilosa */
+  box-shadow: 0 0 1.5vh rgba(0, 195, 255, 0.7); /* Efeito de brilho */
+  display: flex; /* Para centralizar a imagem dentro do círculo */
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+.questions-character-image {
+  width: 100%; /* A imagem preenche o círculo */
+  height: 100%;
+  object-fit: cover; /* Garante que a imagem preencha o espaço, cortando se necessário */
+  transform: scale(1.1); /* Um pequeno zoom para garantir que não haja bordas vazias */
+}
+
+/* Contêiner para as perguntas e o botão Enviar */
+.questions-area {
+  top: 36vh; /* Posição do bloco de questões */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45vh; /* Largura do bloco de questões */
+  max-width: 90%; /* Limite para telas menores */
+  height: 52vh; /* Altura do bloco */
+  overflow-y: auto; /* Adiciona rolagem se houver muitas perguntas */
+  background: rgba(0,0,0,0.3); /* Usar a variável CSS */
+  border-radius: 1.5vh;
+  padding: 2.5vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2vh; /* Espaçamento entre as perguntas */
+  box-shadow: 0 0.8vh 1.5vh rgba(0,0,0,0.3);
+  z-index: 5;
+}
+
+/* Estilos para cada item de pergunta individual */
+.question-item-q-screen {
+  background: rgba(202, 203, 241, 0.774);
+  padding: 1.5vh 2vh;
+  border-radius: 1vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2vh;
+  box-shadow: 0 0.2vh 0.5vh rgba(0,0,0,0.1);
+}
+.question-item-q-screen p {
+    margin: 0;
+    font-size: 2.2vh;
+    color: #333;
+    font-weight: bold;
+    line-height: 1.3;
+}
+.range-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1.5vh;
+    width: 100%; /* Garante que o slider ocupe a largura disponível */
+}
+.range-input-wrapper input[type="range"] {
+    flex-grow: 1;
+    height: 1.2vh;
+    -webkit-appearance: none;
+    width: calc(100% - 5vh); /* Ajusta a largura para deixar espaço para o valor */
+    margin: 0;
+    background: linear-gradient(to right, #007bff 0%, #007bff var(--range-value, 0%), #ddd var(--range-value, 0%), #ddd 100%); /* Cor progressiva */
+    border-radius: 0.6vh;
+    outline: none;
+    opacity: 0.9;
+    transition: background 0.2s; /* Transição para a cor do background do slider */
+}
+/* Estilos do thumb (bolinha) do slider */
+.range-input-wrapper input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 2.5vh;
+  height: 2.5vh;
+  border-radius: 50%;
+  background: #007bff; /* Cor do thumb */
+  cursor: pointer;
+  box-shadow: 0 0 0.5vh rgba(0,0,0,0.3);
+}
+.range-input-wrapper input[type="range"]::-moz-range-thumb {
+  width: 2.5vh;
+  height: 2.5vh;
+  border-radius: 50%;
+  background: #007bff;
+  cursor: pointer;
+  box-shadow: 0 0 0.5vh rgba(0,0,0,0.3);
+}
+.range-input-wrapper span {
+    font-size: 2.5vh;
+    color: #007bff;
+    font-weight: bold;
+    min-width: 3.5vh; /* Garante espaço para dois dígitos */
+    text-align: center;
+}
+
+/* Botão "Enviar" da área de questões */
+.questions-send-button {
+  margin-top: 2.5vh; /* Espaçamento acima do botão */
+  padding: 1.8vh 3.5vh;
+  font-size: 2.8vh;
+  background-color: rgba(var(--btn-success-rgb), var(--btn-success-opacity)); /* Reutiliza cor de sucesso */
+  color: white;
+  border: none;
+  border-radius: 4vh;
+  cursor: pointer;
+  align-self: center; /* Centraliza o botão dentro do flexbox .questions-area */
+  box-shadow:
+    3px 2px 0 #0bc2e2d3,
+    2px 2px 2px rgba(0, 0, 0, 0.7);
+  text-shadow:
+    1px 1px 0 #0bc2e2d3,
+    3px 3px 6px rgba(0, 0, 0, 0.7);
+  border: 0.1vh solid white;
+  transition: background-color 0.2s ease-in-out;
+}
+.questions-send-button:hover {
+  background-color: rgba(var(--btn-success-hover-rgb), var(--btn-success-hover-opacity));
+}
+
+/* =========================================== */
+/* NOVOS ESTILOS PARA A ÁREA 'DONE' (step="done") */
+/* =========================================== */
+
+/* Título personalizado na tela 'done' */
+.done-screen-title {
+  position: absolute;
+  top: 88vh; /* Ajuste a posição vertical conforme necessário */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%; /* Para garantir que o texto quebre linha se for muito longo */
+  text-align: center;
+  font-size:2.5vh;
+  color: white;
+  line-height: 1.4;
+  font-weight: bold;
+  z-index: 10;
+  text-shadow: 2px 2px 2px #007bff;
+}
+
+/* Posicionamento específico para o círculo do personagem na tela 'done' */
+/* Reutiliza os estilos base de .questions-character-circle */
+.done-character-circle-position {
+  top: 33vh; /* Ajuste a posição vertical para a tela 'done' */
+  left: 50%;/* left e transform: translateX(-50%) já estão em .questions-character-circle */
+  z-index: 10;
+}
+
+/* NOVO: Bloco de informações adicionais na tela 'done' */
+.done-info-block {
+  position: absolute;
+  top: 49vh; /* Ajuste a posição vertical para posicionar abaixo do círculo do personagem */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40vh; /* Largura do bloco de informações */
+  max-width: 80%; /* Limite para telas menores */
+  background: rgba(133, 133, 133, 0); /* Fundo semi-transparente para destaque */
+  border-radius: 4vh;
+  padding: 3vh 3vh;
+  box-sizing: border-box;
+  text-align: left; /* Alinhamento do texto dentro do bloco */
+  color: rgb(255, 255, 255);
+  font-size: 2vh;
+  line-height: 1.6;
+  box-shadow: 0vh 0.5vh 0vh #007bff;
+  z-index: 10;
+  text-shadow: 5px 5px 5px #007bff;
+}
+.done-info-block p {
+  margin: 0.5vh 0; /* Espaçamento entre as linhas de informação */
+  white-space: nowrap; /* Tenta manter a linha inteira, mas pode quebrar se não houver espaço */
+  overflow: hidden; /* Esconde o que excede */
+  text-overflow: ellipsis; /* Adiciona "..." se o texto for cortado */
+}
+
+/* Estilos para o badge de licença (G2B Image + "LICENÇA PARA PILOTAR") */
+.done-license-badge {
+  position: absolute;
+  top:19vh; /* Ajuste a posição vertical conforme o novo layout */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex; /* Para alinhar imagem e texto lado a lado */
+  align-items: center; /* Centraliza verticalmente os itens no flex container */
+  justify-content: center; /* Centraliza horizontalmente o grupo de itens */
+  gap: 1.5vh; /* Espaço entre a imagem e o texto */
+  width: auto; /* Deixa a largura se ajustar ao conteúdo */
+  max-width: 90%; /* Limite para telas menores */
+  z-index: 10;
+  padding: 1vh 2vh; /* Pequeno padding para o badge */
+  border-radius: 1vh; /* Bordas arredondadas para o badge */
+  background: rgba(0, 0, 0, 0); /* Fundo sutil para o badge */
+  box-shadow: 0 0 1vh rgba(0,0,0,0); /* Sombra para o badge */
+}
+
+.done-license-badge-image {
+  width: 6vh; /* Tamanho da imagem G2B, ajuste conforme necessário */
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 0.5vh rgba(0,0,0,0.5)); /* Adiciona sombra à imagem */
+}
+
+.done-license-badge-text {
+  font-size: 3.2vh; /* Tamanho do texto */
+  color: white;
+  font-weight: bold;
+  text-shadow: 5px 5px 5px #007bff;
+  white-space: nowrap; /* Garante que o texto não quebre */
+}
+.done-license-badge-image1 {
+  width: 6vh; /* Tamanho da imagem G2B, ajuste conforme necessário */
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 0.5vh rgba(0,0,0,0.5)); /* Adiciona sombra à imagem */
+  opacity: 0%; /* Esta imagem está invisível */
+}
+
+
+/* =========================================== */
+/* ANIMAÇÕES */
+/* =========================================== */
+
+@keyframes marqueeText {
+  0%   { left: 100%; } /* A borda esquerda do texto começa na borda direita do seu contêiner (.character-title) */
+  100% { left: -150%; } /* A borda esquerda do texto se move para a posição -100% da largura do contêiner,
+                         garantindo que ele saia completamente da tela pela esquerda. */
+}
+
+/* ANIMAÇÃO DE ROTAÇÃO PARA O LOGO G2B NO LOADING */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+/* =========================================== */
+/* ESTILOS DA BARRA DE ROLAGEM */
+/* =========================================== */
+
+/* Estilos gerais para todas as barras de rolagem em navegadores Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 0.8vh; /* Largura da barra de rolagem vertical */
+  height: 0.8vh; /* Altura da barra de rolagem horizontal */
+}
+
+/* Estilo do "fundo" da barra de rolagem (a trilha) */
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1); /* Um fundo sutil, quase transparente */
+  border-radius: 0.4vh; /* Bordas arredondadas para a trilha */
+}
+
+/* Estilo do "indicador" da barra de rolagem (o polegar/thumb) */
+::-webkit-scrollbar-thumb {
+  background: #007bff; /* Cor azul, mesma do slider e de outros elementos */
+  border-radius: 0.4vh; /* Bordas arredondadas para o indicador */
+  border: 0.1vh solid transparent; /* Pequena borda transparente para efeito */
+}
+
+/* Estilo do indicador ao passar o mouse */
+::-webkit-scrollbar-thumb:hover {
+  background: #0056b3; /* Cor um pouco mais escura ao passar o mouse */
+}
+
+/* Estilos para navegadores Firefox */
+/* Define a largura da barra de rolagem (auto, thin, none) */
+/* 'thin' é geralmente preferível para uma barra discreta */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #949ca5 rgba(255, 255, 255, 0.1); /* thumb color, track color */
+}
+
+/* Para navegadores que suportam, podemos aplicar um estilo específico para o .questions-area */
+.questions-area {
+  /* ... (seus estilos existentes para .questions-area) ... */
+
+  /* Para Firefox, você pode aplicar scrollbar-color diretamente aqui se quiser algo diferente */
+  /* scrollbar-color: #007bff rgba(0,0,0,0.5); */
+}
+
+/* =========================================== */
+/* ESTILOS PARA INDICADOR DE CARREGAMENTO */
+/* =========================================== */
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vh;
+  background-color: rgba(0, 123, 255, 0.7); /* Fundo semi-transparente azul */
+  color: white;
+  border-radius: 4vh; /* Borda arredondada como os botões */
+  font-size: 2.2vh;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+  box-shadow: 3px 2px 0 #0bc2e2d3, 2px 2px 2px rgba(0, 0, 0, 0.7);
+  border: 0.1vh solid white;
+}
+
+.loading-g2b-image {
+  width: 4vh; /* Tamanho do G2B Logo dentro do indicador */
+  height: auto;
+  object-fit: contain;
+  animation: spin 1.5s linear infinite; /* Animação de rotação */
+}
+
+/* Posições específicas para cada botão de carregamento */
+
+.form-button-loading {
+  position: absolute;
+  bottom: 27vh;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1.5vh 3vh; /* Mesmo padding do botão decolar */
+  width: 15vh; /* Ajuste a largura para que o texto e a imagem caibam */
+}
+
+.character-button-loading {
+  position: absolute;
+  top: 75vh;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1.5vh 3vh; /* Mesmo padding do botão selecionar */
+  width: 18vh; /* Ajuste a largura */
+}
+
+.questions-button-loading {
+  /* Dentro de .questions-area que é flex-direction: column */
+  align-self: center; /* Centraliza como o botão enviar */
+  padding: 1.8vh 3.5vh; /* Mesmo padding do botão enviar */
+  width: 18vh; /* Ajuste a largura */
 }
